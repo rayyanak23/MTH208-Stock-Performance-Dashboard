@@ -1,0 +1,515 @@
+---
+format: html
+editor: visual
+---
+
+::: {style="text-align: center;"}
+# Stock Analysis
+:::
+
+::: {style="text-align: center;"}
+## Group-12
+:::
+
+<div>
+
+### Submitted By:
+
+-   Rayyan Ahmed Khan
+
+-   Mukesh Kumar Suthar
+
+-   Rohit Karwa
+
+-   Dhruv Aggarwal
+
+### Submitted To :
+
+***Dr.Dootika Vats***
+
+</div>
+
+# Contents
+
+-   Acknowledgement
+
+-   Introduction
+
+-   Key Objectives
+
+-   Unlocking the Data
+
+-   Glimpse into Past Performances
+
+-   Comparison of Stocks
+
+-   Impact of COVID-19 and other factors
+
+-   Concluding Remarks
+
+{{< pagebreak >}}
+
+# Acknowledgement
+
+We would like to express our sincere gratitude to **Dr. Dootika Vats** for her exceptional guidance and unwavering support throughout the duration of our Stock Analysis project. The insights and expertise she shared have been invaluable in shaping our understanding of the subject.
+
+We also extend our appreciation to the esteemed institution, **IIT KANPUR**, for providing a conducive and inspiring environment for academic exploration. The resources and facilities at IITK have significantly contributed to the depth and quality of our research.
+
+A special acknowledgment goes to our fellow group members, Dhruv Aggarwal, Rayyan Ahmed Khan, Mukesh Kumar Suthar, and Rohit Karwa. Their collaborative efforts, diverse perspectives, and dedication have played a pivotal role in the success of our project. As a cohesive group, we navigated through challenges and capitalized on opportunities, enhancing both the scope and depth of our analysis.
+
+The collective journey has not only enriched our academic experience but has also fostered a sense of camaraderie and shared achievement. We look forward to applying the skills and knowledge gained from this project to our future endeavors.
+
+
+{{< pagebreak >}}
+
+# Introduction
+
+In the dynamic and intricate world of financial markets, making informed investment decisions is crucial for maximizing returns and managing risks. Analysis of these stocks serves as a fundamental tool for investors and financial professionals, providing insights into the performance and potential of individual stocks, as well as broader market trends. Stock analysis involves the examination of various factors, including market trends, historical performance, and financial metrics, to evaluate the health and potential growth of a company's stock.
+
+We do not stop here only after that but also analyzed how the COVID-19 Pandemic and Global Recession can impact the performance of financial markets, causing fluctuations in stock prices and altering investor sentiment.
+
+![](Images/stock-prices.jpg){fig-align="center" width="443"}
+
+# Key Objectives
+
+-   Analyzing historical stock prices Of selected group of companies.
+
+-   Assess trends, fluctuations, and critical performance metrics for these stocks.
+
+-   Evaluate risk in various companies by analyzing metrics such as beta, standard deviation, and volatility.
+
+-   Compare the performance of different companies.
+
+-   Analyze stock performance in relation to the overall market trend.
+
+-   Impact of COVID-19 Pandemic and Global Recession on these stocks.
+
+{{< pagebreak >}}
+
+# Unlocking The Data
+
+Embarking on this stock analysis journey, we've chosen a substantial timeframe, ranging from **August 2016 to September 2023**. During this period, we're closely examining the monthly data of key players such as **JSW Steel, INFOSYS, HDFC Bank, and TCS**, juxtaposed against the benchmark index, **BSE SENSEX**.
+
+## Key Variables
+
+Within our dataset lies a set of pivotal variables that hold the secrets of market movements. These variables, fundamental to our analysis making it easier for us to decode the intricate dance of financial markets.
+
+-   **OPEN**: Represents the opening price of a stock on a given trading day.
+-   **CLOSE**: Indicates the closing price of a stock on a specific trading day.
+-   **ADJ CLOSE**: Reflects the closing price adjusted for corporate actions such as dividends and stock splits.
+-   **HIGH**: Denotes the highest price at which a stock traded during a specific trading day.
+-   **LOW**: Represents the lowest price at which a stock traded during a specific trading day.
+-   **VOLUME**: Total number of shares traded for a specific stock on a given trading day.
+
+## Data Collection
+
+The data utilized for this analysis has been extracted from Yahoo Finance (<https://finance.yahoo.com>) through the application of the **rvest** package in the R programming language.
+
+## Data Cleaning and Preprocessing
+
+The scraped data, upon extraction, does not align directly for analytical purposes, given that a substantial portion of numerical observations is stored as character data. Additionally, the presence of commas in the numeric values necessitates preprocessing before conducting any meaningful analysis.
+
+Furthermore, the dataset contains certain untidy observations within the table, requiring additional efforts for cleaning and data refinement before it can be effectively utilized for analysis
+
+## Feature Extraction And Inclusion
+
+As part of the feature extraction process, a column expressing percentage changes has been introduced, facilitating a direct comparison of stock values. Additionally, certain financial metrics, intrinsic to the analysis, have been manually incorporated into the dataset. This step was necessary as the information pertaining to these metrics could not be directly scraped and computed from the available data.
+
+```{r}
+#| echo: FALSE
+#| warning: FALSE
+
+# Loading Libraries
+
+library(dplyr)
+library(plotly)
+library(ggplot2)
+library(lubridate)
+
+
+# Loading Data
+
+load("../Data_Files/TCS")
+load("../Data_Files/BSE")
+load("../Data_Files/HDFC")
+load("../Data_Files/JSW")
+load("../Data_Files/INFOSYS")
+
+```
+
+{{< pagebreak >}}
+
+# Glimpse Into Past Performance Of Individual Stocks
+
+## HDFC BANK
+
+![](Images/HDFC.png){fig-align="center" width="498"}
+
+#### About Comapany
+
+HDFC Bank is a leading private sector bank in India, established in 1994. Renowned for its customer-centric approach and technological innovation, it offers a comprehensive range of financial services and has a widespread network across the country.
+
+#### Past Performance
+
+For expeditious examination of historical stock prices, a candlestick chart has been generated. This visual representation offers a concise overview of price movements over time. In a candlestick chart, each 'candle' comprises four key elements: the opening price, closing price, highest price (wick or upper shadow), and lowest price (wick or lower shadow). The body of the candle, typically colored, signifies the price range between opening and closing, with green indicating an upward movement and red indicating a downward movement.
+
+```{r}
+#| echo: FALSE
+#| warning: FALSE
+
+candle <- function(dat)
+{
+  candlestick_trace <- plot_ly(data = dat, type = "candlestick", x = ~Date, open = ~Open,
+                               high = ~High, low = ~Low, close = ~Adj_Close,
+                               text = ~paste("Volume: ", Volume), name = "Price"
+  )
+  
+  # Create a volume bar chart
+  volume_trace <- plot_ly(data = dat, type = "bar",
+                          x = ~Date,
+                          y = ~Volume,
+                          name = "Volume",
+                          marker = list(color = "rgba(0,0,0,0.1)")
+  )
+  
+  # Combine both charts into a subplot
+  plot <- subplot(candlestick_trace, volume_trace, nrows = 2, shareX = TRUE) %>%
+    layout(
+      title = "CandleStick Chart",
+      xaxis = list(title = "Date"),
+      yaxis = list(title = "Price", domain = c(0.3, 1)),
+      yaxis2 = list(title = "Volume", overlaying = "y", side = "right", showgrid = F, domain = c(0, 0.25)),
+      showlegend = TRUE
+    )
+  return(plot)
+}
+
+candle(hdfc[[1]])
+
+```
+
+The stock has exhibited considerable positive growth in recent years. However, a noteworthy observation arises when comparing the length of each candlestick before and after 2020. The discernible increase in post-2020 volatility can be attributed to significant global events, including the COVID-19 pandemic, the Ukraine-Russia war, and a global recession. These geopolitical and economic factors have played pivotal roles in influencing trader sentiments, contributing to heightened market uncertainty and more pronounced price fluctuations during these impactful periods.
+
+{{< pagebreak >}}
+
+#### Yearly Returns
+
+```{r}
+#| echo: false
+#| warning: false
+
+ yearly <- function(dat)
+{
+  bd <- arrange(dat[seq(6,86,12),],Date)
+  bd <- mutate(bd,Change = c(0,diff(Close))/c(1,bd$Close[-length(bd$Close)])*100)
+  last <- (dat[dat$Date == as.Date('23/09/01',"%y/%m/%d"),5]-bd[7,5])/bd[7,5]
+  last <- as.numeric(last*100)
+  bd$Change <- c(bd$Change[-1],last)
+  returns_plot <- plot_ly(data = bd, x = ~Date, y = ~Change, type = 'bar', marker = list(color = '#00bcbc')) %>%
+    layout(
+      title = "Yearly Returns(%)",
+      xaxis = list(title = "Date"),
+      yaxis = list(title = "Return(%)"),
+      showlegend = FALSE
+    )
+  returns_plot
+ }
+yearly(hdfc[[1]])
+```
+
+Collectively, the stock has demonstrated positive returns over the preceding years. However, a noticable trend indicates a gradual decline in these returns over time
+
+#### Optimal Period For Investment
+
+```{r}
+#| echo: FALSE
+#| warning: FALSE
+
+best_month <- function(dat)
+{
+  values_list = list()
+  m = c()
+  for(i in 1:12)
+  {
+    bd <- arrange(dat[seq(i,86,12),],Date)
+    bd <- mutate(bd,Change = c(0,diff(Close))/c(1,bd$Close[-length(bd$Close)])*100)
+    values_list[[i]] <- bd
+    b <-  month(as.data.frame(bd)[1,1])
+    m[i] <- b
+  }
+  
+  names(values_list) <- m
+  
+  data_frames <- lapply(1:length(values_list), function(i) {
+    data.frame(Group = m[i], Value = values_list[[i]])
+  })
+  
+  # Combine all data frames into a single data frame
+  data <- do.call(rbind, data_frames)
+  data <- data[order(data$Group),]
+  data
+  #data$Group <- paste(data$Group,month.name[data$Group])
+  
+  # Define a custom color palette with 12 distinct colors
+
+  # Create a side-by-side boxplot using Plotly with a custom color scheme
+  boxplot_plot <- plot_ly(data, x = ~Group, y = ~Value.Change, type = 'box', boxpoints = "outliers")%>%
+    layout(
+      title = "Yearly Change(Month Wise)",
+      xaxis = list(title = "Months", ticktext=list('Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'),tickvals=1:12,tickmode='array'),
+      yaxis = list(title = "Returns"),
+      boxmode = "group",
+      boxgroupgap = 0.5
+    )
+  
+  # Add boxplots for each group with custom colors
+  
+  
+  # Display the side-by-side boxplot with custom colors for 12 groups
+  boxplot_plot
+  
+}
+
+best_month(hdfc[[1]])
+
+```
+
+For this stock, Q1 stands out as the quarter with commendable returns, characterized by a higher level of certainty compared to other quarters. Conversely, the subsequent quarters demonstrate notably greater returns but with a concurrent increase in uncertainty.
+
+{{< pagebreak >}}
+
+## TCS
+
+![](Images/TCS.jpeg){fig-align="center" width="10cm"}
+
+#### About Company
+
+Tata Consultancy Services (TCS) is a global IT services and consulting company headquartered in India. As one of the largest IT firms worldwide, TCS is renowned for its expertise in technology solutions, consulting, and digital services, serving a diverse range of industries and clients across the globe.
+
+#### Past Performance
+
+```{r}
+#| echo: FALSE
+#| warning: FALSE
+
+candle(tcs[[1]])
+
+```
+
+The stock exhibited a modest positive growth trajectory from 2016 to 2020, marked by a sudden and noteworthy surge in stock prices observed from 2020 to 2022.
+
+{{< pagebreak >}}
+
+#### Yearly Returns
+
+```{r}
+#| echo: FALSE
+#| warning: FALSE
+
+yearly(tcs[[1]])
+
+```
+
+The stock has delivered an average return of 25% during the period from 2016 to 2021. However, in the last two years, its performance has been subpar, with negative returns recorded.
+
+#### Optimal Period For Investment
+
+```{r}
+#| echo: FALSE
+#| warning: FALSE
+
+best_month(tcs[[1]])
+
+```
+
+For this stock, Q1 and Q2 stands out as the quarters with notably greater returns, compared to other quarters. Conversely, the subsequent quarters demonstrate no decent returns with much certainity.
+
+{{< pagebreak >}}
+
+## INFOSYS
+
+![](Images/Infosys.png){fig-align="center" width="13.4cm" height="5.4cm"}
+
+#### About Company
+
+Infosys is a global leader in consulting, technology, outsourcing, and next-gen services. Headquartered in India, it is renowned for its innovative solutions, digital transformation capabilities, and commitment to sustainability. Infosys serves clients across various industries, driving technological advancements and business excellence.
+
+#### Past Performance
+
+```{r}
+#| echo: FALSE
+#| warning: FALSE
+
+candle(infosys[[1]])
+
+```
+
+The stock exhibited a relatively subdued growth trend from 2016 to 2020; however, a sudden upsurge is evident in its performance from the period 2020 to 2022.
+
+{{< pagebreak >}}
+
+#### Yearly Returns
+
+```{r}
+#| echo: FALSE
+#| warning: FALSE
+
+yearly(infosys[[1]])
+
+```
+
+The discernible growth in the stock is apparent in its annual returns, with returns exceeding 50% in both 2020 and 2021. However, the stock's performance in the remaining years is comparatively less favorable, indicating varying levels of return.
+
+#### Optimal Period For Investment
+
+```{r}
+#| echo: FALSE
+#| warning: FALSE
+
+best_month(infosys[[1]])
+
+```
+
+For this stock, Q1 and Q4 stands out as an quarter with notably greater returns compared to other quarters. Conversely, the subsequent quarters demonstrate comparatively less returns.
+
+{{< pagebreak >}}
+
+## JSW STEEL
+
+![](Images/JSW.jpg){fig-align="center" width="4.84in" height="2.63in"}
+
+#### About Company
+
+JSW Steel is a prominent steel manufacturer based in India, recognized for its integrated steel plants, robust production capabilities, and a diversified product portfolio. With a strong focus on sustainability and quality, JSW Steel has emerged as a leading player in the global steel industry, contributing significantly to infrastructure development and economic growth.
+
+```{r}
+#| echo: FALSE
+#| warning: FALSE
+
+
+candle(jsw[[1]])
+
+```
+
+The trajectory of stock growth has been ambiguous, with a consistent increase from 2016 to 2019, followed by a sudden decline. However, the stock displayed exceptional growth in 2020 and mid-2021. The dynamics of these fluctuations pose challenges in understanding the influencing factors.
+
+{{< pagebreak >}}
+
+#### Yearly Returns
+
+```{r}
+#| echo: FALSE
+#| warning: FALSE
+
+yearly(jsw[[1]])
+
+```
+
+As discerned from the candlestick chart, the annual returns of the stock display a consistent pattern, featuring escalating returns until 2018, succeeded by an abrupt decline. Noteworthy is the exceptional growth observed in 2020 and 2021, while 2022 reveals a return to more moderate performance, and as of the present data, the trajectory for 2023 remains undetermined.
+
+The depicted movement in both charts lacks conclusive evidence about the stock's overall performance, making it challenging to draw definitive conclusions
+
+#### Optimal Period For Investment
+
+```{r}
+#| echo: FALSE
+#| warning: FALSE
+
+best_month(jsw[[1]])
+
+```
+
+The first, second, and third quartiles (Q1, Q2, and Q3) exhibit positive median returns, with Q2 displaying more outliers. This phenomenon is potentially attributed to the significant surge in stock prices between 2020 and 2021. The definitive cause for such a substantial jump cannot be ascertained due to the unpredictable trajectory of the stock. The unpredictable nature of its movement makes it challenging to pinpoint specific factors leading to the observed surge
+
+{{< pagebreak >}}
+
+# Conducting a Comparative Analysis of Individual Stocks and Their Alignment with the Broader Market Trend
+
+#### (%) Change in the Stocks and Market Index
+
+```{r}
+#| echo: FALSE
+#| warning: FALSE
+
+big = rbind(tcs[[1]],bse,hdfc[[1]],jsw[[1]],infosys[[1]])
+big['Comp'] = rep(c('TCS','BSE','HDFC Bank','JSW Steel','Infosys'),rep(86,5))
+
+comp <- function(data)
+{
+  ploty <- list()
+  plot <- plot_ly()
+  for(i in 1:length(data))
+  {
+    plot <- add_trace(plot, x = data[[i]]$Date, y = data[[i]]$Changem, type = 'scatter', mode = 'lines',name=data[[i]]$Comp[1])
+  }
+  plot <- layout(plot,xaxis=list(title='Date'),yaxis=list(title='Change(%)'))
+  plot
+}
+
+change <- function(data)
+{
+  foo <- list()
+  unq <- unique(data$Comp)
+  for(i in 1:length(unq))
+  {
+    dat <- subset(as.data.frame(data),Comp == unq[i])
+    point <- as.data.frame(dat)[1,5]
+    dat$Changem <- (dat$Close-point)/point*100
+    foo[[i]] <- dat
+  }
+  comp(foo)
+}
+
+change(big)
+
+```
+
+In the overarching assessment, the chosen cohort of companies has outperformed the general market trend. Notably, JSW Steel stands out as the top performer, yielding returns exceeding 300% over the past six years. Conversely, Infosys emerges as the least robust performer within our portfolio, generating a return of 150%, which closely aligns with the overall market return. It is imperative to acknowledge that the impressive performance of JSW Steel is accompanied by heightened volatility compared to other stocks and the overall market.
+
+{{< pagebreak >}}
+
+# Analyzing the Impact of the COVID-19 Pandemic and Geopolitical as well as Global Economic Tensions on Stock Performance
+
+#### Analysis On Median Monthly Change
+
+```{r}
+#| echo: FALSE
+#| warning: FALSE
+
+big$Year <- year(big$Date)
+
+d2 <- big %>% mutate(era=as.numeric(Year>=2020)) %>% group_by(across(all_of(c('Comp','era')))) %>% summarise('chng'= median(Change),'Volatility'=sd(Change))
+
+d2 <- d2 %>% mutate(era = ifelse(era,'Post Covid','Pre Covid'))
+
+ggplot(d2,aes(x=Comp,y=chng,fill=d2$era))+geom_bar(stat='identity',position ='dodge2')+labs(y='Monthly Return',x='Company',fill='Era')+theme_minimal()
+
+```
+
+The post-COVID era has witnessed a positive impact on the monthly returns of JSW Steel, Infosys, and TCS. However, it is noteworthy that HDFC Bank, during the same period, reflects a negative return. Various factors contributing to this discrepancy may include sector-specific challenges, economic uncertainties, and distinct market positioning strategies employed by HDFC Bank in response to the evolving financial landscape
+
+{{< pagebreak >}}
+
+#### Analysis On Volatility Of Stock
+
+```{r}
+#| echo: FALSE
+#| warning: FALSE
+
+ggplot(d2,aes(x=Comp,y=Volatility,fill=era))+geom_bar(stat='identity',position='dodge2')+
+  labs(y='Volatility',x='Company',fill='Era')+
+  theme_minimal()
+
+```
+
+It is noticable from the graphical representation that the stock's volatility has experienced a notable increase in the post-COVID era. This implies that geopolitical and global economic tensions have adversely affected trader sentiments, instigating a heightened sense of insecurity among market participants
+
+{{< pagebreak >}}
+
+# Concluding Remarks
+
+In conclusion, the comprehensive analysis of stock performance, encompassing JSW Steel, Infosys, HDFC Bank, and TCS, along with the benchmark index BSE SENSEX, has provided valuable insights. The project highlighted distinctive trends in returns, volatility, and reactions to significant events such as the COVID-19 pandemic and global economic tensions. JSW Steel emerged as a standout performer, showcasing substantial returns albeit accompanied by higher volatility. Infosys exhibited steady growth, HDFC Bank faced challenges resulting in a negative return, and TCS demonstrated resilience.
+
+Upon comprehensive analysis, it is discerned that technology and consulting firms exhibit consistent and robust growth, maintaining a relatively stable trajectory. In contrast, other stocks appear more volatile in comparison. It is imperative to note, however, that the sample collected may not be representative of each sector in the market. Consequently, drawing definitive conclusions is challenging, but based on the available data, these observations hold true.
+
+The observed variability in stock prices is not solely dictated by isolated elements but rather by the collective impact of numerous dynamic variables. These encompass economic indicators, global geopolitical events, and sentiments triggered by news and phenomena, collectively shaping the intricate and often unpredictable dynamics of the market. Recognizing the multifaceted nature of these influences is imperative for a comprehensive understanding of stock behavior and for formulating well-informed investment strategies.
